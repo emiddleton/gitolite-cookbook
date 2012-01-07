@@ -108,7 +108,7 @@ ruby_block "create repos and keys" do
         repo.add_permission(permission[:type],permission[:refex].to_s, permission[:users])
       end
     end
-    keys.each do |user, public_key|
+    keys.each do |public_key|
       ga_repo.add_key(Gitolite::SSHKey.new(public_key[:type],public_key[:key],public_key[:email]))
     end
     ga_repo.save_and_apply
