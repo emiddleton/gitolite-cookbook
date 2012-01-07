@@ -29,13 +29,21 @@ include_recipe "ssh"
 include_recipe "portage::layman"
 portage_overlay 'chef-gentoo-bootstrap-overlay'
 
-kw = portage_package_keywords "=dev-ruby/gitolite-0.0.1" do
+kw0 = portage_package_keywords "=dev-ruby/grit-2.4.1" do
+  action :nothing
+end
+kw1 = portage_package_keywords "=dev-ruby/hashery-1.4.0" do
+  action :nothing
+end
+kw2 = portage_package_keywords "=dev-ruby/gitolite-0.0.1" do
   action :nothing
 end
 xs = package "dev-ruby/gitolite" do
   action :nothing
 end
-kw.run_action(:create)
+kw0.run_action(:create)
+kw1.run_action(:create)
+kw2.run_action(:create)
 xs.run_action(:install)
 
 Gem.clear_paths
