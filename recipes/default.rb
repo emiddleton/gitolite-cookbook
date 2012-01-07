@@ -69,6 +69,7 @@ execute "install gitolite" do
     sudo -Hu git /usr/bin/gl-setup -q /var/lib/gitolite/id_rsa.pub
     git clone git@#{node.fqdn}:gitolite-admin.git /root/gitolite-admin
   CMD
+  creates '/root/gitolite-admin'
 end
 
 ruby_block "create repos and keys" do
@@ -77,17 +78,17 @@ ruby_block "create repos and keys" do
     keys = [{:type => key_type, :key => key, :email => email}]
     repos = { "gitolite-admin" => [ { :type => 'RW+', :users => ['root'] } ] }
     repos_result = search(:repos,"host:#{node.fqdn}")
-    if repos_result.last > 0
-      filtered_repos = repos_result.first.map{|a|a.to_hash}
-      repos.merge(filtered_repos.inject({}){|c,b|c[b['repo']] = b['permissions'];c})
+    unless repos_result.empty?
+      filtered_repos = repos_result.map{|a|a.to_hash}
+      repos.merge!(filtered_repos.inject({}){|c,b|c[b['repo']] = b['permissions'];c})
       users = filtered_repos.inject([]){|us,r|us.concat(r['permissions'].first['users']);us}.uniq
 
       # get users databags for given keys
-      users_databags = Chef::Search::Query.new.search(:users, users.map{|u|"name:#{u}"}.join(" OR "))
+      users_databags = search(:users, users.map{|u|"id:#{u}"}.join(" OR "))
       
       # get keys for users
       keys.concat(
-        users_databags.first.map{|a|a.to_hash["authorized_keys"]}.flatten.map do |k|
+        users_databags.map{|a|a.to_hash["authorized_keys"]}.flatten.map do |k|
           type,key,email =*k.split
           {:type=>type,:key=>key,:email=>email}
         end.reject{|k|k[:type] != 'ssh-rsa' or not k[:email] =~ /.+@.+/}
