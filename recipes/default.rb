@@ -67,7 +67,7 @@ execute "install gitolite" do
   command <<-CMD
     cp /root/.ssh/id_rsa.pub /var/lib/gitolite/id_rsa.pub
     sudo -Hu git /usr/bin/gl-setup -q /var/lib/gitolite/id_rsa.pub
-    git clone git@localhost:gitolite-admin.git /root/gitolite-admin
+    git clone git@#{node.fqdn}:gitolite-admin.git /root/gitolite-admin
   CMD
 end
 
