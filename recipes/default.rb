@@ -101,14 +101,17 @@ ruby_block "create repos and keys" do
       if conf.has_repo? repo_name
         repo = conf.get_repo(repo_name)
       else
+        Chef::Log.info "adding repository #{repo_name}" 
         repo = Gitolite::Config::Repo.new(repo_name)
         conf.add_repo(repo)
       end
       permissions.each do |permission|
+        Chef::Log.info "adding permissions #{permission[:type]}#{permission[:refex]} for #{permission[:users]} to #{repo_name}" 
         repo.add_permission(permission[:type],permission[:refex].to_s, permission[:users])
       end
     end
     keys.each do |public_key|
+      Chef::Log.info "adding public key for #{public_key[:email]}"
       ga_repo.add_key(Gitolite::SSHKey.new(public_key[:type],public_key[:key],public_key[:email]))
     end
     ga_repo.save_and_apply
